@@ -1,14 +1,52 @@
-# flutter_qiniu_sdk
+# Qiniu SDK plugin for Flutter
 
-A qiniu sdk flutter plugin.
+[![pub package](https://img.shields.io/pub/v/flutter_qiniu_sdk.svg)](https://pub.dartlang.org/packages/flutter_qiniu_sdk)
 
-## Getting Started
+A flutter plugin for Qiniu object storage sdk. Support the flexible configuration, progress and complete the callback.
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+*Note*: This plugin is still under development, and some APIs might not be available yet. [Feedback welcome](https://github.com/FingerArt/flutter-qiniu-sdk/issues) and [Pull Requests](https://github.com/FingerArt/flutter-qiniu-sdk/pulls) are most welcome!
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+## Support platform
+
+- [x] Android
+- [ ] iOS
+
+## Dependency
+
+- Android: `qiniu-android-sdk:7.3.15`
+- iOS:
+
+## Installation
+
+First, add `flutter_qiniu_sdk` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
+
+## Example
+
+1. Configuration
+
+```dart
+import 'package:flutter_qiniu_sdk/flutter_qiniu_sdk.dart';
+
+var conf = ConfigBuilder()
+  ..enableRecord = true // enable breakpoint resume
+  ..zone = Zone.autoZone // select zone service
+  ..useHttps = true; // enable https
+
+Qiniu.config(conf.build);
+```
+
+2. Upload file
+
+```dart
+Qiniu.put(key, token, filepath, onProgress: (String key, double percent) {
+  debugPrint("onProgress: $key, $percent");
+}, onComplete: (String key, ResponseInfo info, String response) {
+  debugPrint("onComplete: $key, $info, $response");
+});
+```
+
+3. Cancel upload task
+
+```dart
+Qiniu.cancel(key);
+```

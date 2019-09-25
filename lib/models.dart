@@ -10,31 +10,32 @@ class ConfigBuilder {
   String _recordDirPath;
 
   /// 分片上传时，每片的大小。 默认256K
-  set chunkSize(chunkSize) => _chunkSize = chunkSize;
+  set chunkSize(int chunkSize) => _chunkSize = chunkSize;
 
   /// 启用分片上传阀值。默认512K
-  set putThreshhold(putThreshhold) => _putThreshhold = putThreshhold;
+  set putThreshhold(int putThreshhold) => _putThreshhold = putThreshhold;
 
   /// 链接超时。默认10秒
-  set connectTimeout(connectTimeout) => _connectTimeout = connectTimeout;
+  set connectTimeout(int connectTimeout) => _connectTimeout = connectTimeout;
 
   /// 是否使用https上传域名，默认不使用
-  set useHttps(useHttps) => _useHttps = useHttps;
+  set useHttps(bool useHttps) => _useHttps = useHttps;
 
   /// 服务器响应超时。默认60秒
-  set responseTimeout(responseTimeout) => _responseTimeout = responseTimeout;
+  set responseTimeout(int responseTimeout) =>
+      _responseTimeout = responseTimeout;
 
   /// 设置区域，指定不同区域的上传域名、备用域名、备用IP。默认 autoZone
-  set zone(zone) => _zone = zone;
+  set zone(Zone zone) => _zone = zone;
 
   /// 上传失败重试次数，默认3次
-  set retryMax(retryMax) => _retryMax = retryMax;
+  set retryMax(int retryMax) => _retryMax = retryMax;
 
   /// 是否开启断点续传，默认不开启
-  set enableRecord(enableRecord) => _enableRecord = enableRecord;
+  set enableRecord(bool enableRecord) => _enableRecord = enableRecord;
 
   /// 断点记录文件保存的文件夹位置，默认在 ExternalFilesDir
-  set recordDirPath(recordDirPath) => _recordDirPath = recordDirPath;
+  set recordDirPath(String recordDirPath) => _recordDirPath = recordDirPath;
 
   Map get build {
     var result = Map();
@@ -140,7 +141,11 @@ class ResponseInfo {
   }
 
   static bool isStatusCodeForBrokenNetwork(int code) {
-    return code == NetworkError || code == UnknownHost || code == CannotConnectToHost || code == TimedOut || code == NetworkConnectionLost;
+    return code == NetworkError ||
+        code == UnknownHost ||
+        code == CannotConnectToHost ||
+        code == TimedOut ||
+        code == NetworkConnectionLost;
   }
 
   bool isCancelled() {
@@ -148,7 +153,9 @@ class ResponseInfo {
   }
 
   bool isOK() {
-    return statusCode == 200 && error == null && (hasReqId() || response != null);
+    return statusCode == 200 &&
+        error == null &&
+        (hasReqId() || response != null);
   }
 
   bool isNetworkBroken() {
@@ -160,7 +167,8 @@ class ResponseInfo {
   }
 
   bool isServerError() {
-    return (statusCode >= 500 && statusCode < 600 && statusCode != 579) || statusCode == 996;
+    return (statusCode >= 500 && statusCode < 600 && statusCode != 579) ||
+        statusCode == 996;
   }
 
   bool needSwitchServer() {
@@ -168,11 +176,17 @@ class ResponseInfo {
   }
 
   bool needRetry() {
-    return !isCancelled() && (needSwitchServer() || statusCode == 406 || (statusCode == 200 && error != null) || isNotQiniu());
+    return !isCancelled() &&
+        (needSwitchServer() ||
+            statusCode == 406 ||
+            (statusCode == 200 && error != null) ||
+            isNotQiniu());
   }
 
   bool isNotQiniu() {
-    return statusCode < 500 && statusCode >= 200 && (!hasReqId() && response == null);
+    return statusCode < 500 &&
+        statusCode >= 200 &&
+        (!hasReqId() && response == null);
   }
 
   bool hasReqId() {
@@ -206,8 +220,6 @@ class NativePlatformResult {
   Map<String, dynamic> options;
 
   NativePlatformResult({this.code, this.message, this.options});
-
-  NativePlatformResult.factory(Map map) {}
 
   bool get isOK => code == 200;
 

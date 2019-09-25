@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qiniu_sdk/models.dart';
 
@@ -43,17 +42,19 @@ class Qiniu {
   /// [mimeType] 指定上传文件的MimeType
   ///
   /// [checkCrc] 启用上传内容crc32校验
+  ///
+  /// [onProgress] 上传进度回调
+  ///
+  /// [onComplete] 完成上传回调
   static Future<NativePlatformResult> put(
-    String key,
-    String token,
-    String filePath, {
-    Map<String, dynamic> params,
-    String mimeType,
-    bool checkCrc,
-    OnProgress onProgress,
-    OnComplete onComplete,
-  }) async {
-    return await _instance._onPut(key, token, filePath, params, mimeType, checkCrc, onProgress, onComplete);
+      String key, String token, String filePath,
+      {Map<String, dynamic> params,
+      String mimeType,
+      bool checkCrc,
+      OnProgress onProgress,
+      OnComplete onComplete}) async {
+    return await _instance._onPut(key, token, filePath, params, mimeType,
+        checkCrc, onProgress, onComplete);
   }
 
   /// 取消上传
@@ -67,8 +68,15 @@ class Qiniu {
     return await _channel.invokeMapMethod("init", map);
   }
 
-  Future<NativePlatformResult> _onPut(String key, String token, String filePath, Map<String, dynamic> params, String mimeType,
-      bool checkCrc, OnProgress onProgress, OnComplete onComplete) async {
+  Future<NativePlatformResult> _onPut(
+      String key,
+      String token,
+      String filePath,
+      Map<String, dynamic> params,
+      String mimeType,
+      bool checkCrc,
+      OnProgress onProgress,
+      OnComplete onComplete) async {
     var result = NativePlatformResult();
     try {
       var args = {

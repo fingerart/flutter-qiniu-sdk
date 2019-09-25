@@ -13,8 +13,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  var _tokenController = TextEditingController();
-  var _keyController = TextEditingController();
+  var _tokenController = TextEditingController(
+      text:
+          "oBq1g3XfJwIoDr08eUMd8uDesH8hqexM_HKuEerb:vNLGUWlG-zN9g6Fq4ddz0pppHdI=:eyJjYWxsYmFja0JvZHlUeXBlIjoiYXBwbGljYXRpb24vanNvbiIsInNjb3BlIjoiZGFoZW5nLXl0OjQvWVRfSU0vMjAxOTA5MjUvTGJFWXVaekkvbmltYW1haW1hLnBpIiwiY2FsbGJhY2tVcmwiOiJodHRwOi8vamN0ZXN0LmZyZWUuaWRjZmVuZ3llLmNvbS9pbXMvY2FsbCIsImRlYWRsaW5lIjoxNTY5MzgxNjg5LCJjYWxsYmFja0JvZHkiOiJ7XCJrZXlcIjpcIiQoa2V5KVwiLFwiaGFzaFwiOlwiJChldGFnKVwiLFwiYnVja2V0XCI6XCIkKGJ1Y2tldClcIixcImZzaXplXCI6JChmc2l6ZSl9In0=");
+  var _keyController = TextEditingController(text: "4/YT_IM/20190925/LbEYuZzI/nimamaima.pi");
 
   String _logs;
   String _filename;
@@ -31,10 +33,11 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     if (!mounted) return;
 
-    var cf = ConfigBuilder()
+    var conf = ConfigBuilder()
       ..enableRecord = true
+      ..zone = Zone.autoZone
       ..useHttps = true;
-    Qiniu.config(cf.build);
+    Qiniu.config(conf.build);
   }
 
   @override
@@ -131,7 +134,7 @@ class _MyAppState extends State<MyApp> {
       debugPrint("onComplete: $key, $info, $response");
       setState(() {
         _logs = info.toString();
-        _state = "上传完成";
+        _state = info.isOK() ? "上传完成" : info.error;
       });
     });
   }
