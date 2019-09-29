@@ -165,5 +165,4 @@ enum class QiniuSDKWrapper : UpProgressHandler, UpCompletionHandler, NetReadyHan
      * 默认断点续传目录
      */
     private fun getExternalFilesDir(): String = File(mRegistrar.activity().externalCacheDir, "qiniu").path
-
 }

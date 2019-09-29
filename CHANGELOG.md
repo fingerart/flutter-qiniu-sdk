@@ -1,3 +1,7 @@
+## 0.1.0+2
+
+- Fix some bugs
+
 ## 0.1.0+1
 
 - Fix health suggestions

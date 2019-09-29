@@ -154,7 +154,6 @@ class ResponseInfo {
 
   bool isOK() {
     return statusCode == 200 &&
-        error == null &&
         (hasReqId() || response != null);
   }
 
