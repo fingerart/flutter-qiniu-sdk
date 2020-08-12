@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_qiniu_sdk/flutter_qiniu_sdk.dart';
 import 'package:flutter_qiniu_sdk/models.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_qiniu_sdk/flutter_qiniu_sdk.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('io.chengguo/flutter_qiniu_sdk');
@@ -27,7 +27,7 @@ void main() {
       ..putThreshhold = 1
       ..responseTimeout = 3000
       ..retryMax = 3;
-    expect(await Qiniu.config(config.build), <String, dynamic>{
+    expect(await QiNiu.config(config), <String, dynamic>{
       "enableRecord": true,
       "recordDirPath": "/storage/emulated/0/Downloads/test",
       "zone": Zone.zoneAs0.index,

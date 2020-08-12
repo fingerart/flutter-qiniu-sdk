@@ -15,13 +15,15 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   var _tokenController = TextEditingController(
       text:
-          "oBq1g3XfJwIoDr08eUMd8uDesH8hqexM_HKuEerb:vNLGUWlG-zN9g6Fq4ddz0pppHdI=:eyJjYWxsYmFja0JvZHlUeXBlIjoiYXBwbGljYXRpb24vanNvbiIsInNjb3BlIjoiZGFoZW5nLXl0OjQvWVRfSU0vMjAxOTA5MjUvTGJFWXVaekkvbmltYW1haW1hLnBpIiwiY2FsbGJhY2tVcmwiOiJodHRwOi8vamN0ZXN0LmZyZWUuaWRjZmVuZ3llLmNvbS9pbXMvY2FsbCIsImRlYWRsaW5lIjoxNTY5MzgxNjg5LCJjYWxsYmFja0JvZHkiOiJ7XCJrZXlcIjpcIiQoa2V5KVwiLFwiaGFzaFwiOlwiJChldGFnKVwiLFwiYnVja2V0XCI6XCIkKGJ1Y2tldClcIixcImZzaXplXCI6JChmc2l6ZSl9In0=");
+      "oBq1g3XfJwIoDr08eUMd8uDesH8hqexM_HKuEerb:vNLGUWlG-zN9g6Fq4ddz0pppHdI=:eyJjYWxsYmFja0JvZHlUeXBlIjoiYXBwbGljYXRpb24vanNvbiIsInNjb3BlIjoiZGFoZW5nLXl0OjQvWVRfSU0vMjAxOTA5MjUvTGJFWXVaekkvbmltYW1haW1hLnBpIiwiY2FsbGJhY2tVcmwiOiJodHRwOi8vamN0ZXN0LmZyZWUuaWRjZmVuZ3llLmNvbS9pbXMvY2FsbCIsImRlYWRsaW5lIjoxNTY5MzgxNjg5LCJjYWxsYmFja0JvZHkiOiJ7XCJrZXlcIjpcIiQoa2V5KVwiLFwiaGFzaFwiOlwiJChldGFnKVwiLFwiYnVja2V0XCI6XCIkKGJ1Y2tldClcIixcImZzaXplXCI6JChmc2l6ZSl9In0=");
   var _keyController = TextEditingController(text: "4/YT_IM/20190925/LbEYuZzI/nimamaima.pi");
 
   String _logs;
   String _filename;
   double _progress;
   String _state;
+
+  UpCancellation cancelable;
 
   @override
   void initState() {
@@ -32,12 +34,11 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     if (!mounted) return;
-
-    var conf = ConfigBuilder()
+    var config = ConfigBuilder()
       ..enableRecord = true
       ..zone = Zone.autoZone
       ..useHttps = true;
-    Qiniu.config(conf.build);
+    QiNiu.config(config);
   }
 
   @override
@@ -121,11 +122,7 @@ class _MyAppState extends State<MyApp> {
     if (filepath == null) {
       return;
     }
-    setState(() {
-      _filename = filepath.substring(filepath.lastIndexOf("/") + 1);
-      _state = "上传中";
-    });
-    Qiniu.put(key, token, filepath, onProgress: (String key, double percent) {
+    cancelable = await QiNiu.put(key, token, filepath, onProgress: (String key, double percent) {
       debugPrint("onProgress: $key, $percent");
       setState(() {
         _progress = percent;
@@ -137,12 +134,14 @@ class _MyAppState extends State<MyApp> {
         _state = info.isOK() ? "上传完成" : info.error;
       });
     });
+    setState(() {
+      _filename = filepath.substring(filepath.lastIndexOf("/") + 1);
+      _state = "上传中";
+    });
   }
 
-  _cancelUpload() {
-    Qiniu.cancel(_keyController.text);
-    setState(() {
-      _state = "取消上传";
-    });
+  _cancelUpload() async {
+    await cancelable?.cancel();
+    setState(() => _state = "取消上传");
   }
 }

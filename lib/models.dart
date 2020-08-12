@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 class ConfigBuilder {
   int _chunkSize;
   int _putThreshhold;
@@ -22,8 +24,7 @@ class ConfigBuilder {
   set useHttps(bool useHttps) => _useHttps = useHttps;
 
   /// 服务器响应超时。默认60秒
-  set responseTimeout(int responseTimeout) =>
-      _responseTimeout = responseTimeout;
+  set responseTimeout(int responseTimeout) => _responseTimeout = responseTimeout;
 
   /// 设置区域，指定不同区域的上传域名、备用域名、备用IP。默认 autoZone
   set zone(Zone zone) => _zone = zone;
@@ -153,8 +154,7 @@ class ResponseInfo {
   }
 
   bool isOK() {
-    return statusCode == 200 &&
-        (hasReqId() || response != null);
+    return statusCode == 200 && (hasReqId() || response != null);
   }
 
   bool isNetworkBroken() {
@@ -166,8 +166,7 @@ class ResponseInfo {
   }
 
   bool isServerError() {
-    return (statusCode >= 500 && statusCode < 600 && statusCode != 579) ||
-        statusCode == 996;
+    return (statusCode >= 500 && statusCode < 600 && statusCode != 579) || statusCode == 996;
   }
 
   bool needSwitchServer() {
@@ -176,16 +175,11 @@ class ResponseInfo {
 
   bool needRetry() {
     return !isCancelled() &&
-        (needSwitchServer() ||
-            statusCode == 406 ||
-            (statusCode == 200 && error != null) ||
-            isNotQiniu());
+        (needSwitchServer() || statusCode == 406 || (statusCode == 200 && error != null) || isNotQiniu());
   }
 
   bool isNotQiniu() {
-    return statusCode < 500 &&
-        statusCode >= 200 &&
-        (!hasReqId() && response == null);
+    return statusCode < 500 && statusCode >= 200 && (!hasReqId() && response == null);
   }
 
   bool hasReqId() {
@@ -224,8 +218,33 @@ class NativePlatformResult {
 
   bool get notOK => code != 200;
 
+  factory NativePlatformResult.fromMap(Map<dynamic, dynamic> map) {
+    return NativePlatformResult(
+      code: map["code"],
+      message: map["message"],
+    );
+  }
+
+  factory NativePlatformResult.fromException(Exception e) {
+    var message;
+    if (e is PlatformException) {
+      message = e.message;
+    }
+    return NativePlatformResult(code: 500, message: message);
+  }
+
   @override
   String toString() {
     return 'NativePlatformResult{code: $code, message: $message, options: $options}';
+  }
+}
+
+class UpCancellation {
+  final Future Function() _cancel;
+
+  UpCancellation([this._cancel]);
+
+  cancel() async {
+    await _cancel?.call();
   }
 }

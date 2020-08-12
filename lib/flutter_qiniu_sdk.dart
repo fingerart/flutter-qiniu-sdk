@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_qiniu_sdk/models.dart';
 
-class Qiniu {
-  static Qiniu _instance = Qiniu._();
+class QiNiu {
+  static QiNiu _instance = QiNiu._();
   MethodChannel _channel = MethodChannel('io.chengguo/flutter_qiniu_sdk');
   Map<String, OnProgress> _progresses = Map();
   Map<String, OnComplete> _completes = Map();
 
-  Qiniu._() {
+  QiNiu._() {
     _channel.setMethodCallHandler((MethodCall call) async {
       switch (call.method) {
         case "onProgress":
@@ -23,10 +23,8 @@ class Qiniu {
   }
 
   /// 配置七牛SDK
-  ///
-  /// 可使用 [ConfigBuilder] 构建
-  static Future<dynamic> config(Map map) async {
-    return await _instance._onConfig(map);
+  static Future config(ConfigBuilder configBuilder) async {
+    return await _instance._onConfig(configBuilder.build);
   }
 
   /// 上传文件
@@ -46,38 +44,21 @@ class Qiniu {
   /// [onProgress] 上传进度回调
   ///
   /// [onComplete] 完成上传回调
-  static Future<NativePlatformResult> put(
-      String key, String token, String filePath,
+  static Future<UpCancellation> put(String key, String token, String filePath,
       {Map<String, dynamic> params,
-      String mimeType,
-      bool checkCrc,
-      OnProgress onProgress,
-      OnComplete onComplete}) async {
-    return await _instance._onPut(key, token, filePath, params, mimeType,
-        checkCrc, onProgress, onComplete);
-  }
-
-  /// 取消上传
-  ///
-  /// [key] key
-  static Future cancel(String key) async {
-    return await _instance._onCancel(key);
+        String mimeType,
+        bool checkCrc,
+        OnProgress onProgress,
+        OnComplete onComplete}) async {
+    return await _instance._onPut(key, token, filePath, params, mimeType, checkCrc, onProgress, onComplete);
   }
 
   Future<dynamic> _onConfig(Map map) async {
     return await _channel.invokeMapMethod("init", map);
   }
 
-  Future<NativePlatformResult> _onPut(
-      String key,
-      String token,
-      String filePath,
-      Map<String, dynamic> params,
-      String mimeType,
-      bool checkCrc,
-      OnProgress onProgress,
-      OnComplete onComplete) async {
-    var result = NativePlatformResult();
+  Future<UpCancellation> _onPut(String key, String token, String filePath, Map<String, dynamic> params,
+      String mimeType, bool checkCrc, OnProgress onProgress, OnComplete onComplete) async {
     try {
       var args = {
         "key": key,
@@ -87,23 +68,24 @@ class Qiniu {
         "mimeType": mimeType,
         "checkCrc": checkCrc,
       };
-      Map map = await _instance._channel.invokeMapMethod("put", args);
+      await _channel.invokeMapMethod("put", args);
       if (onProgress != null) {
-        _instance._progresses[key] = onProgress;
+        _progresses[key] = onProgress;
       }
       if (onComplete != null) {
-        _instance._completes[key] = onComplete;
+        _completes[key] = onComplete;
       }
-      result.code = map["code"];
-      result.message = map["message"];
+
+      return UpCancellation(() async => await _onCancel(key));
     } on PlatformException catch (e) {
-      result.code = 500;
-      result.message = e.message;
+      NativePlatformResult.fromException(e);
+      _progresses.remove(key);
+      _completes.remove(key);
     }
-    return result;
+    return UpCancellation();
   }
 
-  _onCancel(String key) async {
+  Future _onCancel(String key) {
     _destroyKey(key);
     return _channel.invokeMethod("cancel", {"key": key});
   }
