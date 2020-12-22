@@ -2,6 +2,7 @@ package io.chengguo.flutter_qiniu_sdk
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.qiniu.android.common.AutoZone
 import com.qiniu.android.common.FixedZone
 import com.qiniu.android.common.Zone
@@ -19,7 +20,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.collections.HashMap
 
-enum class QiniuSDKWrapper : UpProgressHandler, UpCompletionHandler, NetReadyHandler, UrlConverter {
+enum class QiniuSDKWrapper : UpProgressHandler, NetReadyHandler, UrlConverter {
 
     INSTANCE;
 
@@ -102,8 +103,15 @@ enum class QiniuSDKWrapper : UpProgressHandler, UpCompletionHandler, NetReadyHan
                 this,
                 UpCancellationSignal { mPutIds[key] != putId }
         )
-        mUploadManager?.put(filePath, key, token, this, uploadOptions)
-        result.successDefault()
+        mUploadManager?.put(filePath, key, token, { k, info, response ->
+            mPutIds.remove(k)
+            val args = HashMap<String, Any?>()
+            args["key"] = k
+            args["info"] = info.toMap()
+            args["response"] = response.toString()
+            mHandler.post { mChannel.invokeMethod("onComplete", args) }
+            result.successDefault()
+        }, uploadOptions)
     }
 
     /**
@@ -122,22 +130,12 @@ enum class QiniuSDKWrapper : UpProgressHandler, UpCompletionHandler, NetReadyHan
         mHandler.post { mChannel.invokeMethod("onProgress", args) }
     }
 
-    override fun complete(key: String?, info: ResponseInfo?, response: JSONObject?) {
-        mPutIds.remove(key)
-
-        val args = HashMap<String, Any?>()
-        args["key"] = key
-        args["info"] = info.toMap()
-        args["response"] = response.toString()
-        mHandler.post { mChannel.invokeMethod("onComplete", args) }
-    }
-
     override fun waitReady() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun convert(url: String): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return url
     }
 
     /**

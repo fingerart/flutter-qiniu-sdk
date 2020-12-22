@@ -1,3 +1,7 @@
+## 0.1.0+3
+
+- Add sync upload
+
 ## 0.1.0+2
 
 - Fix some bugs

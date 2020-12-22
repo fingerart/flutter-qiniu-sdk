@@ -35,17 +35,30 @@ var conf = ConfigBuilder()
 Qiniu.config(conf.build);
 ```
 
-2. Upload file
+2. Async upload file
 
 ```dart
-Qiniu.put(key, token, filepath, onProgress: (String key, double percent) {
+var cancelable = Qiniu.put(key, token, filepath, onProgress: (String key, double percent) {
+  debugPrint("onProgress: $key, $percent");
+}, onComplete: (String key, ResponseInfo info, String response) {
+  debugPrint("onComplete: $key, $info, $response");
+});
+
+// cancel
+cancelable.cancel();
+```
+
+3. Sync upload file
+
+```dart
+Qiniu.syncPut(key, token, filepath, onProgress: (String key, double percent) {
   debugPrint("onProgress: $key, $percent");
 }, onComplete: (String key, ResponseInfo info, String response) {
   debugPrint("onComplete: $key, $info, $response");
 });
 ```
 
-3. Cancel upload task
+4. Cancel upload task
 
 ```dart
 Qiniu.cancel(key);

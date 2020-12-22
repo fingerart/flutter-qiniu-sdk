@@ -27,7 +27,7 @@ class QiNiu {
     return await _instance._onConfig(configBuilder.build);
   }
 
-  /// 上传文件
+  /// 异步上传文件
   ///
   /// [key] key
   ///
@@ -46,36 +46,66 @@ class QiNiu {
   /// [onComplete] 完成上传回调
   static Future<UpCancellation> put(String key, String token, String filePath,
       {Map<String, dynamic> params,
-        String mimeType,
-        bool checkCrc,
-        OnProgress onProgress,
-        OnComplete onComplete}) async {
+      String mimeType,
+      bool checkCrc,
+      OnProgress onProgress,
+      OnComplete onComplete}) async {
     return await _instance._onPut(key, token, filePath, params, mimeType, checkCrc, onProgress, onComplete);
+  }
+
+  /// 同步上传文件
+  ///
+  /// [key] key
+  ///
+  /// [token] token
+  ///
+  /// [filePath] 文件路径
+  ///
+  /// [params] 扩展参数，以<code>x:</code>开头的用户自定义参数
+  ///
+  /// [mimeType] 指定上传文件的MimeType
+  ///
+  /// [checkCrc] 启用上传内容crc32校验
+  ///
+  /// [onProgress] 上传进度回调
+  ///
+  /// [onComplete] 完成上传回调
+  static Future syncPut(String key, String token, String filePath,
+      {Map<String, dynamic> params,
+      String mimeType,
+      bool checkCrc,
+      OnProgress onProgress,
+      OnComplete onComplete}) async {
+    await _instance._onSyncPut(key, token, filePath, params, mimeType, checkCrc, onProgress, onComplete);
   }
 
   Future<dynamic> _onConfig(Map map) async {
     return await _channel.invokeMapMethod("init", map);
   }
 
+  Future _onSyncPut(String key, String token, String filePath, Map<String, dynamic> params, String mimeType,
+      bool checkCrc, OnProgress onProgress, OnComplete onComplete) async {
+    var args = {
+      "key": key,
+      "token": token,
+      "filePath": filePath,
+      "params": params,
+      "mimeType": mimeType,
+      "checkCrc": checkCrc,
+    };
+    if (onProgress != null) {
+      _progresses[key] = onProgress;
+    }
+    if (onComplete != null) {
+      _completes[key] = onComplete;
+    }
+    await _channel.invokeMapMethod("put", args);
+  }
+
   Future<UpCancellation> _onPut(String key, String token, String filePath, Map<String, dynamic> params,
       String mimeType, bool checkCrc, OnProgress onProgress, OnComplete onComplete) async {
     try {
-      var args = {
-        "key": key,
-        "token": token,
-        "filePath": filePath,
-        "params": params,
-        "mimeType": mimeType,
-        "checkCrc": checkCrc,
-      };
-      await _channel.invokeMapMethod("put", args);
-      if (onProgress != null) {
-        _progresses[key] = onProgress;
-      }
-      if (onComplete != null) {
-        _completes[key] = onComplete;
-      }
-
+      await _onSyncPut(key, token, filePath, params, mimeType, checkCrc, onProgress, onComplete);
       return UpCancellation(() async => await _onCancel(key));
     } on PlatformException catch (e) {
       NativePlatformResult.fromException(e);

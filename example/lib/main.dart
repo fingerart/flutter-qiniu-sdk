@@ -15,8 +15,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   var _tokenController = TextEditingController(
       text:
-      "oBq1g3XfJwIoDr08eUMd8uDesH8hqexM_HKuEerb:vNLGUWlG-zN9g6Fq4ddz0pppHdI=:eyJjYWxsYmFja0JvZHlUeXBlIjoiYXBwbGljYXRpb24vanNvbiIsInNjb3BlIjoiZGFoZW5nLXl0OjQvWVRfSU0vMjAxOTA5MjUvTGJFWXVaekkvbmltYW1haW1hLnBpIiwiY2FsbGJhY2tVcmwiOiJodHRwOi8vamN0ZXN0LmZyZWUuaWRjZmVuZ3llLmNvbS9pbXMvY2FsbCIsImRlYWRsaW5lIjoxNTY5MzgxNjg5LCJjYWxsYmFja0JvZHkiOiJ7XCJrZXlcIjpcIiQoa2V5KVwiLFwiaGFzaFwiOlwiJChldGFnKVwiLFwiYnVja2V0XCI6XCIkKGJ1Y2tldClcIixcImZzaXplXCI6JChmc2l6ZSl9In0=");
-  var _keyController = TextEditingController(text: "4/YT_IM/20190925/LbEYuZzI/nimamaima.pi");
+      "oBq1g3XfJwIoDr08eUMd8uDesH8hqexM_HKuEerb:uzpaVkLs9FXJGaDOu4aQv_mygME=:eyJjYWxsYmFja0JvZHlUeXBlIjoiYXBwbGljYXRpb24vanNvbiIsInNjb3BlIjoiZG9jcy1kZXY6bHpiLzIwMjAxMjIyL0RydDBka1pmLzEyMy5wbmciLCJkZWFkbGluZSI6MTYwODYyNjA2MywiY2FsbGJhY2tCb2R5Ijoie1wia2V5XCI6XCIkKGtleSlcIixcImhhc2hcIjpcIiQoZXRhZylcIixcImJ1Y2tldFwiOlwiJChidWNrZXQpXCIsXCJmaWxlU2l6ZVwiOiQoZnNpemUpfSJ9");
+  var _keyController = TextEditingController(text: "lzb/20201222/oaHY2fRg/123.png");
 
   String _logs;
   String _filename;
@@ -87,9 +87,15 @@ class _MyAppState extends State<MyApp> {
               Divider(),
               Row(
                 children: <Widget>[
-                  OutlineButton(onPressed: () => _selectFileAndUpload(), child: Text("Select file & Upload")),
+                  OutlineButton(onPressed: () => _selectFileAndAsyncUpload(), child: Text("Select file & async upload")),
                   VerticalDivider(),
                   OutlineButton(onPressed: () => _cancelUpload(), child: Text("Cancel")),
+                ],
+              ),
+              Divider(),
+              Row(
+                children: <Widget>[
+                  OutlineButton(onPressed: () => _selectFileAndSyncUpload(), child: Text("Select file & sync upload")),
                 ],
               ),
               Divider(),
@@ -109,7 +115,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _selectFileAndUpload() async {
+  void _selectFileAndAsyncUpload() async {
     var key = _keyController.text;
     if (key.isEmpty) {
       return;
@@ -137,6 +143,37 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _filename = filepath.substring(filepath.lastIndexOf("/") + 1);
       _state = "上传中";
+    });
+  }
+
+  void _selectFileAndSyncUpload() async {
+    var key = _keyController.text;
+    if (key.isEmpty) {
+      return;
+    }
+    var token = _tokenController.text;
+    if (token.isEmpty) {
+      return;
+    }
+    var filepath = await FilePicker.getFilePath();
+    if (filepath == null) {
+      return;
+    }
+    setState(() {
+      _filename = filepath.substring(filepath.lastIndexOf("/") + 1);
+      _state = "上传中";
+    });
+    await QiNiu.syncPut(key, token, filepath, onProgress: (String key, double percent) {
+      debugPrint("onProgress: $key, $percent");
+      setState(() {
+        _progress = percent;
+      });
+    }, onComplete: (String key, ResponseInfo info, String response) {
+      debugPrint("onComplete: $key, $info, $response");
+      setState(() {
+        _logs = info.toString();
+        _state = info.isOK() ? "上传完成" : info.error;
+      });
     });
   }
 
