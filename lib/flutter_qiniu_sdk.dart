@@ -70,20 +70,20 @@ class QiNiu {
   /// [onProgress] 上传进度回调
   ///
   /// [onComplete] 完成上传回调
-  static Future syncPut(String key, String token, String filePath,
+  static Future<ResponseInfo> syncPut(String key, String token, String filePath,
       {Map<String, dynamic> params,
       String mimeType,
       bool checkCrc,
       OnProgress onProgress,
       OnComplete onComplete}) async {
-    await _instance._onSyncPut(key, token, filePath, params, mimeType, checkCrc, onProgress, onComplete);
+    return await _instance._onSyncPut(key, token, filePath, params, mimeType, checkCrc, onProgress, onComplete);
   }
 
   Future<dynamic> _onConfig(Map map) async {
     return await _channel.invokeMapMethod("init", map);
   }
 
-  Future _onSyncPut(String key, String token, String filePath, Map<String, dynamic> params, String mimeType,
+  Future<ResponseInfo> _onSyncPut(String key, String token, String filePath, Map<String, dynamic> params, String mimeType,
       bool checkCrc, OnProgress onProgress, OnComplete onComplete) async {
     var args = {
       "key": key,
@@ -99,7 +99,9 @@ class QiNiu {
     if (onComplete != null) {
       _completes[key] = onComplete;
     }
-    await _channel.invokeMapMethod("put", args);
+    var result = await _channel.invokeMapMethod("put", args);
+    var info = result["info"] as Map;
+    return ResponseInfo.map(info);
   }
 
   Future<UpCancellation> _onPut(String key, String token, String filePath, Map<String, dynamic> params,

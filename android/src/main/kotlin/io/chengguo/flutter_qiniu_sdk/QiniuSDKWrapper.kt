@@ -110,7 +110,7 @@ enum class QiniuSDKWrapper : UpProgressHandler, NetReadyHandler, UrlConverter {
             args["info"] = info.toMap()
             args["response"] = response.toString()
             mHandler.post { mChannel.invokeMethod("onComplete", args) }
-            result.successDefault()
+            result.successDefault(Pair("data", args))
         }, uploadOptions)
     }
 
