@@ -1,3 +1,7 @@
+## 0.1.0+7
+
+- Fix bug
+
 ## 0.1.0+6
 
 - Add sync return value

@@ -100,7 +100,7 @@ class QiNiu {
       _completes[key] = onComplete;
     }
     var result = await _channel.invokeMapMethod("put", args);
-    var info = result["info"] as Map;
+    var info = (result["data"] as Map)["info"] as Map;
     return ResponseInfo.map(info);
   }
 

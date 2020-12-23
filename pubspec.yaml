@@ -1,6 +1,6 @@
 name: flutter_qiniu_sdk
 description: A flutter plugin for Qiniu object storage sdk. Support the flexible configuration, progress and complete the callback.
-version: 0.1.0+6
+version: 0.1.0+7
 homepage: https://github.com/FingerArt/flutter-qiniu-sdk
 
 environment:
