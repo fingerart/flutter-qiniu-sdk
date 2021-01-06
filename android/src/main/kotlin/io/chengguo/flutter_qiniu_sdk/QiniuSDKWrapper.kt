@@ -107,8 +107,8 @@ enum class QiniuSDKWrapper : UpProgressHandler, NetReadyHandler, UrlConverter {
             mPutIds.remove(k)
             val args = HashMap<String, Any?>()
             args["key"] = k
-            args["info"] = info.toMap()
-            args["response"] = response.toString()
+            args["info"] = info?.toMap()
+            args["response"] = response?.toString()
             mHandler.post { mChannel.invokeMethod("onComplete", args) }
             result.successDefault(Pair("data", args))
         }, uploadOptions)
