@@ -1,5 +1,7 @@
 # Qiniu SDK plugin for Flutter
 
+> ⚠️This project is no longer maintained, please use [QiNiu official flutter sdk library](https://github.com/qiniu/dart-sdk/tree/master/flutter).
+
 [![pub package](https://img.shields.io/pub/v/flutter_qiniu_sdk.svg)](https://pub.dartlang.org/packages/flutter_qiniu_sdk)
 
 A flutter plugin for Qiniu object storage sdk. Support the flexible configuration, progress and complete the callback.
